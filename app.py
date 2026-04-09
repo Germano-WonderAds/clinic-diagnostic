@@ -36,7 +36,7 @@ def get_domain_overview(domain, database='pt'):
             timeout=15
         )
         data = response.json()
-        metrics = data['tasks'][0]['result'][0]['metrics']['organic']
+        metrics = data['tasks'][0]['result'][0]['items'][0]['metrics']['organic']
         return {
             'Or': metrics.get('count', 0),
             'Ot': metrics.get('etv', 0)

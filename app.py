@@ -12,6 +12,7 @@ CORS(app)
 SEMRUSH_API_KEY = os.environ.get('SEMRUSH_API_KEY', '')
 DATAFORSEO_API_KEY = os.environ.get('DATAFORSEO_API_KEY', '')
 OPENPAGERANK_API_KEY = os.environ.get('OPENPAGERANK_API_KEY', '')
+RESEND_API_KEY = os.environ.get('RESEND_API_KEY', '')
 
 DFS_HEADERS = {
     'Authorization': f'Basic {DATAFORSEO_API_KEY}',
@@ -248,8 +249,32 @@ def submit_lead():
     print(f"→ ROUTE TO: {routing['label']} — {routing['description']}")
     print(f"================\n")
 
-    # TODO: add webhook to CRM / ActiveCampaign / HubSpot / Make.com
-    # Pass routing['product'] and routing['action'] to trigger correct automation
+    try:
+        requests.post(
+            'https://api.resend.com/emails',
+            headers={'Authorization': f'Bearer {RESEND_API_KEY}', 'Content-Type': 'application/json'},
+            json={
+                'from': 'WonderAds Leads <onboarding@resend.dev>',
+                'to': ['alex@wonder-ads.com', 'germano@wonder-ads.com'],
+                'subject': f'🦷 Novo Lead — {clinic} ({routing["label"]})',
+                'html': f'''
+                    <h2>Novo lead do Diagnóstico Digital</h2>
+                    <table style="border-collapse:collapse;width:100%">
+                        <tr><td style="padding:8px;color:#666">Nome</td><td style="padding:8px"><strong>{name}</strong></td></tr>
+                        <tr><td style="padding:8px;color:#666">Clínica</td><td style="padding:8px"><strong>{clinic}</strong></td></tr>
+                        <tr><td style="padding:8px;color:#666">Email</td><td style="padding:8px"><a href="mailto:{email}">{email}</a></td></tr>
+                        <tr><td style="padding:8px;color:#666">Telemóvel</td><td style="padding:8px">{phone}</td></tr>
+                        <tr><td style="padding:8px;color:#666">Faturação</td><td style="padding:8px">{faturacao}</td></tr>
+                        <tr><td style="padding:8px;color:#666">Website</td><td style="padding:8px">{domain}</td></tr>
+                        <tr><td style="padding:8px;color:#666">Score SEO</td><td style="padding:8px"><strong>{score}/100</strong></td></tr>
+                        <tr style="background:#f9f9f9"><td style="padding:8px;color:#666">Rota</td><td style="padding:8px"><strong style="color:#7c3aed">{routing["label"]}</strong> — {routing["description"]}</td></tr>
+                    </table>
+                '''
+            },
+            timeout=10
+        )
+    except Exception as e:
+        print(f"Email send error: {e}")
 
     return jsonify({'success': True, 'routing': routing})
 

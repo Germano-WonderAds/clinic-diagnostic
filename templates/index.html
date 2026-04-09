@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnóstico Digital da Sua Clínica | WonderAds</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #07071a;
+      --bg2: #0f0f2d;
+      --purple: #7c3aed;
+      --purple-light: #a855f7;
+      --pink: #ec4899;
+      --white: #ffffff;
+      --gray: #94a3b8;
+      --gray-dark: #1e1e3a;
+      --border: #1e1e4a;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--white);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── BACKGROUND GLOW ── */
+    .glow {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .glow-1 { width: 600px; height: 600px; background: var(--purple); top: -200px; left: -200px; }
+    .glow-2 { width: 400px; height: 400px; background: var(--pink); bottom: -100px; right: -100px; }
+
+    /* ── LAYOUT ── */
+    .container { max-width: 780px; margin: 0 auto; padding: 0 24px; position: relative; z-index: 1; }
+
+    /* ── HEADER ── */
+    header {
+      padding: 28px 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .logo { font-size: 22px; font-weight: 800; letter-spacing: -0.5px; }
+    .logo span { background: linear-gradient(135deg, var(--purple-light), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    /* ── VIEWS ── */
+    .view { display: none; }
+    .view.active { display: block; }
+
+    /* ── HERO ── */
+    .hero { text-align: center; padding: 60px 0 40px; }
+    .badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      background: rgba(124, 58, 237, 0.15); border: 1px solid rgba(124, 58, 237, 0.3);
+      border-radius: 100px; padding: 6px 16px; font-size: 13px; color: var(--purple-light);
+      margin-bottom: 28px;
+    }
+    .badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--purple-light); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    h1 { font-size: clamp(32px, 5vw, 52px); font-weight: 900; line-height: 1.1; letter-spacing: -1.5px; margin-bottom: 20px; }
+    h1 em { font-style: normal; background: linear-gradient(135deg, var(--purple-light), var(--pink)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+    .subtitle { font-size: 17px; color: var(--gray); line-height: 1.6; max-width: 520px; margin: 0 auto 48px; }
+
+    /* ── INPUT FORM ── */
+    .input-group {
+      display: flex; gap: 12px; max-width: 580px; margin: 0 auto;
+      flex-wrap: wrap;
+    }
+    .input-group input {
+      flex: 1; min-width: 240px;
+      background: var(--gray-dark); border: 1px solid var(--border);
+      border-radius: 12px; padding: 16px 20px;
+      font-size: 16px; color: var(--white); font-family: inherit;
+      outline: none; transition: border-color 0.2s;
+    }
+    .input-group input::placeholder { color: #4a4a6a; }
+    .input-group input:focus { border-color: var(--purple); }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      color: white; border: none; border-radius: 12px;
+      padding: 16px 32px; font-size: 16px; font-weight: 700;
+      cursor: pointer; white-space: nowrap; font-family: inherit;
+      transition: opacity 0.2s, transform 0.1s;
+    }
+    .btn-primary:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+    .trust-line { margin-top: 20px; font-size: 13px; color: #4a4a6a; }
+    .trust-line strong { color: var(--gray); }
+
+    /* ── LOADING ── */
+    .loading-view { text-align: center; padding: 80px 0; }
+    .spinner-wrap { margin-bottom: 40px; }
+    .spinner {
+      width: 64px; height: 64px;
+      border: 3px solid var(--border);
+      border-top-color: var(--purple-light);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-steps { list-style: none; text-align: left; max-width: 320px; margin: 0 auto; }
+    .loading-steps li {
+      padding: 10px 0; font-size: 15px; color: #4a4a6a;
+      display: flex; align-items: center; gap: 12px;
+      border-bottom: 1px solid var(--border); transition: color 0.3s;
+    }
+    .loading-steps li:last-child { border-bottom: none; }
+    .loading-steps li.done { color: var(--white); }
+    .loading-steps li.active { color: var(--purple-light); }
+    .step-icon { width: 20px; text-align: center; font-size: 14px; }
+
+    /* ── RESULTS ── */
+    .results-view { padding: 40px 0 80px; }
+
+    .results-header { text-align: center; margin-bottom: 40px; }
+    .domain-tag {
+      display: inline-block; background: var(--gray-dark);
+      border: 1px solid var(--border); border-radius: 8px;
+      padding: 6px 14px; font-size: 13px; color: var(--gray);
+      margin-bottom: 24px;
+    }
+
+    /* Score Circle */
+    .score-circle-wrap { display: flex; justify-content: center; margin-bottom: 24px; }
+    .score-circle { position: relative; width: 180px; height: 180px; }
+    .score-circle svg { transform: rotate(-90deg); }
+    .score-circle-inner {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+    .score-number { font-size: 52px; font-weight: 900; line-height: 1; letter-spacing: -2px; }
+    .score-label-small { font-size: 12px; color: var(--gray); margin-top: 4px; }
+
+    .score-category-label {
+      font-size: 22px; font-weight: 800; margin-bottom: 12px;
+    }
+    .score-message { font-size: 15px; color: var(--gray); max-width: 500px; margin: 0 auto 8px; line-height: 1.6; }
+    .score-urgency { font-size: 14px; color: var(--purple-light); font-weight: 600; }
+
+    /* Metrics Grid */
+    .metrics-grid {
+      display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+      margin: 40px 0;
+    }
+    @media (min-width: 600px) { .metrics-grid { grid-template-columns: repeat(4, 1fr); } }
+
+    .metric-card {
+      background: var(--gray-dark); border: 1px solid var(--border);
+      border-radius: 16px; padding: 20px 16px; text-align: center;
+    }
+    .metric-icon { font-size: 24px; margin-bottom: 10px; }
+    .metric-value { font-size: 28px; font-weight: 800; letter-spacing: -1px; }
+    .metric-name { font-size: 12px; color: var(--gray); margin-top: 4px; }
+
+    /* Keywords Table */
+    .keywords-section { margin: 32px 0; }
+    .section-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; color: var(--gray); text-transform: uppercase; letter-spacing: 0.5px; font-size: 12px; }
+    .kw-table { width: 100%; border-collapse: collapse; }
+    .kw-table th { text-align: left; font-size: 12px; color: var(--gray); padding: 8px 12px; border-bottom: 1px solid var(--border); }
+    .kw-table td { padding: 12px 12px; font-size: 14px; border-bottom: 1px solid var(--border); }
+    .kw-table tr:last-child td { border-bottom: none; }
+    .pos-badge {
+      display: inline-block; padding: 2px 10px; border-radius: 100px;
+      font-size: 12px; font-weight: 700;
+    }
+    .pos-top3 { background: rgba(34, 197, 94, 0.15); color: #22c55e; }
+    .pos-top10 { background: rgba(234, 179, 8, 0.15); color: #eab308; }
+    .pos-other { background: rgba(148, 163, 184, 0.1); color: var(--gray); }
+
+    /* Divider */
+    .divider { height: 1px; background: var(--border); margin: 40px 0; }
+
+    /* Lead Form */
+    .lead-form-section { background: var(--gray-dark); border: 1px solid var(--border); border-radius: 24px; padding: 40px 32px; text-align: center; }
+    .lead-form-section h2 { font-size: 26px; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.5px; }
+    .lead-form-section p { color: var(--gray); font-size: 15px; margin-bottom: 28px; line-height: 1.5; }
+
+    .form-grid { display: grid; gap: 12px; }
+    @media (min-width: 500px) { .form-grid { grid-template-columns: 1fr 1fr; } }
+
+    .form-grid input, .form-grid .full-width {
+      background: var(--bg); border: 1px solid var(--border);
+      border-radius: 10px; padding: 14px 16px;
+      font-size: 15px; color: var(--white); font-family: inherit;
+      outline: none; transition: border-color 0.2s; width: 100%;
+    }
+    .form-grid input::placeholder { color: #4a4a6a; }
+    .form-grid input:focus { border-color: var(--purple); }
+    .form-grid .full-width { grid-column: 1 / -1; }
+
+    .btn-cta {
+      grid-column: 1 / -1;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      color: white; border: none; border-radius: 12px;
+      padding: 18px; font-size: 17px; font-weight: 800;
+      cursor: pointer; font-family: inherit;
+      transition: opacity 0.2s, transform 0.1s;
+      width: 100%;
+    }
+    .btn-cta:hover { opacity: 0.9; transform: translateY(-1px); }
+    .btn-cta:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    .form-disclaimer { font-size: 12px; color: #4a4a6a; margin-top: 12px; grid-column: 1 / -1; }
+
+    /* Thank you */
+    .thankyou-view { text-align: center; padding: 80px 0; }
+    .checkmark { font-size: 64px; margin-bottom: 24px; }
+    .thankyou-view h2 { font-size: 32px; font-weight: 900; margin-bottom: 16px; letter-spacing: -1px; }
+    .thankyou-view p { color: var(--gray); font-size: 16px; max-width: 440px; margin: 0 auto 36px; line-height: 1.6; }
+    .btn-book {
+      display: inline-block;
+      background: linear-gradient(135deg, var(--purple), var(--pink));
+      color: white; text-decoration: none; border-radius: 14px;
+      padding: 18px 40px; font-size: 17px; font-weight: 800;
+      transition: opacity 0.2s;
+    }
+    .btn-book:hover { opacity: 0.9; }
+
+    .error-msg { color: #ef4444; font-size: 13px; margin-top: 8px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div class="glow glow-1"></div>
+  <div class="glow glow-2"></div>
+
+  <header>
+    <div class="logo">Wonder<span>Ads</span></div>
+  </header>
+
+  <div class="container">
+
+    <!-- ── VIEW: HERO ── -->
+    <div id="view-hero" class="view active">
+      <div class="hero">
+        <div class="badge"><span class="dot"></span> Diagnóstico Gratuito · 30 segundos</div>
+        <h1>A sua clínica está a <em>perder pacientes</em> para a concorrência?</h1>
+        <p class="subtitle">Insira o website da sua clínica e descubra o seu score de presença digital — e onde está a deixar dinheiro na mesa.</p>
+
+        <div class="input-group">
+          <input type="url" id="url-input" placeholder="www.suaclinica.pt" autocomplete="off" />
+          <button class="btn-primary" onclick="startAnalysis()">Analisar Agora</button>
+        </div>
+        <div id="hero-error" class="error-msg"></div>
+        <p class="trust-line">Usado por <strong>+100 clínicas</strong> em Portugal · Grátis · Sem compromisso</p>
+      </div>
+    </div>
+
+    <!-- ── VIEW: LOADING ── -->
+    <div id="view-loading" class="view">
+      <div class="loading-view">
+        <div class="spinner-wrap">
+          <div class="spinner"></div>
+        </div>
+        <p style="font-size:18px; font-weight:700; margin-bottom:32px;">A analisar a sua clínica...</p>
+        <ul class="loading-steps" id="loading-steps">
+          <li id="step-1"><span class="step-icon">○</span> A verificar autoridade de domínio</li>
+          <li id="step-2"><span class="step-icon">○</span> A analisar palavras-chave orgânicas</li>
+          <li id="step-3"><span class="step-icon">○</span> A verificar backlinks e referências</li>
+          <li id="step-4"><span class="step-icon">○</span> A calcular score de visibilidade</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- ── VIEW: RESULTS ── -->
+    <div id="view-results" class="view">
+      <div class="results-view">
+        <div class="results-header">
+          <div class="domain-tag" id="result-domain"></div>
+
+          <div class="score-circle-wrap">
+            <div class="score-circle">
+              <svg width="180" height="180" viewBox="0 0 180 180">
+                <circle cx="90" cy="90" r="80" fill="none" stroke="#1e1e3a" stroke-width="12"/>
+                <circle id="score-arc" cx="90" cy="90" r="80" fill="none" stroke="#7c3aed" stroke-width="12"
+                  stroke-linecap="round" stroke-dasharray="502" stroke-dashoffset="502"
+                  style="transition: stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1), stroke 0.3s"/>
+              </svg>
+              <div class="score-circle-inner">
+                <div class="score-number" id="result-score">0</div>
+                <div class="score-label-small">/ 100</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="score-category-label" id="result-label"></div>
+          <p class="score-message" id="result-message"></p>
+          <p class="score-urgency" id="result-urgency"></p>
+        </div>
+
+        <!-- Metrics -->
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <div class="metric-icon">🏆</div>
+            <div class="metric-value" id="m-authority">—</div>
+            <div class="metric-name">Authority Score</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon">🔑</div>
+            <div class="metric-value" id="m-keywords">—</div>
+            <div class="metric-name">Palavras-chave</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon">👥</div>
+            <div class="metric-value" id="m-traffic">—</div>
+            <div class="metric-name">Visitas/mês</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-icon">🔗</div>
+            <div class="metric-value" id="m-domains">—</div>
+            <div class="metric-name">Domínios referentes</div>
+          </div>
+        </div>
+
+        <!-- Top Keywords -->
+        <div class="keywords-section" id="kw-section" style="display:none">
+          <div class="section-title">Top Palavras-chave Orgânicas</div>
+          <table class="kw-table">
+            <thead>
+              <tr>
+                <th>Palavra-chave</th>
+                <th>Posição</th>
+                <th>Volume mensal</th>
+              </tr>
+            </thead>
+            <tbody id="kw-tbody"></tbody>
+          </table>
+        </div>
+
+        <div class="divider"></div>
+
+        <!-- Lead Form -->
+        <div class="lead-form-section">
+          <h2>Receba o seu Relatório Completo Gratuito</h2>
+          <p>A nossa equipa analisa o relatório completo da sua clínica e entra em contacto com um plano de ação personalizado — sem compromisso.</p>
+
+          <div class="form-grid">
+            <input type="text" id="lead-name" placeholder="O seu nome" />
+            <input type="text" id="lead-clinic" placeholder="Nome da clínica" />
+            <input type="email" id="lead-email" placeholder="Email profissional" class="full-width" />
+            <input type="tel" id="lead-phone" placeholder="Telemóvel (ex: 912 345 678)" class="full-width" />
+            <select id="lead-faturacao" class="full-width" style="background:var(--bg);border:1px solid var(--border);border-radius:10px;padding:14px 16px;font-size:15px;color:var(--white);font-family:inherit;outline:none;appearance:none;cursor:pointer;">
+              <option value="" disabled selected style="color:#4a4a6a">Faturação anual da clínica</option>
+              <option value="50000">Menos de 100K€/ano</option>
+              <option value="125000">Entre 100K€ e 150K€/ano</option>
+              <option value="225000">Entre 150K€ e 300K€/ano</option>
+              <option value="400000">Mais de 300K€/ano</option>
+            </select>
+            <button class="btn-cta" onclick="submitLead()">Quero o Meu Relatório Completo →</button>
+            <p class="form-disclaimer">Os seus dados são tratados com confidencialidade. Sem spam.</p>
+          </div>
+          <div id="form-error" class="error-msg" style="margin-top:8px;"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── VIEW: THANK YOU ── -->
+    <div id="view-thankyou" class="view">
+      <div class="thankyou-view">
+        <div class="checkmark">✅</div>
+        <h2 id="ty-title">Obrigado!</h2>
+        <p id="ty-message"></p>
+        <a id="ty-cta" href="https://wonder-ads.com" target="_blank" class="btn-book">Falar com a Nossa Equipa →</a>
+      </div>
+    </div>
+
+  </div><!-- /container -->
+
+  <script>
+    let analysisResult = null;
+
+    function showView(id) {
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      document.getElementById(id).classList.add('active');
+    }
+
+    function formatNumber(n) {
+      if (n === 0) return '0';
+      if (n >= 1000) return (n / 1000).toFixed(1).replace('.0', '') + 'K';
+      return n.toString();
+    }
+
+    function startAnalysis() {
+      const urlInput = document.getElementById('url-input').value.trim();
+      const errorEl = document.getElementById('hero-error');
+      errorEl.textContent = '';
+
+      if (!urlInput) {
+        errorEl.textContent = 'Por favor insira o URL da sua clínica.';
+        return;
+      }
+
+      showView('view-loading');
+      animateLoadingSteps();
+
+      fetch('/analyze', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url: urlInput })
+      })
+      .then(r => r.json())
+      .then(data => {
+        if (data.error) throw new Error(data.error);
+        analysisResult = data;
+        setTimeout(() => renderResults(data), 1000);
+      })
+      .catch(err => {
+        showView('view-hero');
+        document.getElementById('hero-error').textContent = 'Erro ao analisar. Verifique o URL e tente novamente.';
+      });
+    }
+
+    function animateLoadingSteps() {
+      const steps = ['step-1', 'step-2', 'step-3', 'step-4'];
+      const icons = { done: '✓', active: '◌', pending: '○' };
+      let i = 0;
+
+      function tick() {
+        steps.forEach((id, idx) => {
+          const el = document.getElementById(id);
+          el.classList.remove('active', 'done');
+          const iconEl = el.querySelector('.step-icon');
+          if (idx < i) { el.classList.add('done'); iconEl.textContent = icons.done; }
+          else if (idx === i) { el.classList.add('active'); iconEl.textContent = icons.active; }
+          else { iconEl.textContent = icons.pending; }
+        });
+        if (i < steps.length) { i++; setTimeout(tick, 700); }
+      }
+      tick();
+    }
+
+    function renderResults(data) {
+      // Domain
+      document.getElementById('result-domain').textContent = data.domain;
+
+      // Score animation
+      const scoreEl = document.getElementById('result-score');
+      const arc = document.getElementById('score-arc');
+      const circumference = 502;
+      const offset = circumference - (data.score / 100) * circumference;
+      arc.style.stroke = data.color;
+      arc.style.strokeDashoffset = offset;
+
+      let current = 0;
+      const target = data.score;
+      const increment = target / 60;
+      const timer = setInterval(() => {
+        current = Math.min(current + increment, target);
+        scoreEl.textContent = Math.round(current);
+        if (current >= target) clearInterval(timer);
+      }, 16);
+
+      // Labels
+      document.getElementById('result-label').textContent = data.label;
+      document.getElementById('result-label').style.color = data.color;
+      document.getElementById('result-message').textContent = data.message;
+      document.getElementById('result-urgency').textContent = data.urgency;
+
+      // Metrics
+      const m = data.metrics;
+      document.getElementById('m-authority').textContent = m.authority_score || '0';
+      document.getElementById('m-keywords').textContent = formatNumber(m.organic_keywords);
+      document.getElementById('m-traffic').textContent = formatNumber(m.organic_traffic);
+      document.getElementById('m-domains').textContent = formatNumber(m.referring_domains);
+
+      // Keywords
+      if (data.top_keywords && data.top_keywords.length > 0) {
+        document.getElementById('kw-section').style.display = 'block';
+        const tbody = document.getElementById('kw-tbody');
+        tbody.innerHTML = data.top_keywords.map(kw => {
+          const posClass = kw.position <= 3 ? 'pos-top3' : kw.position <= 10 ? 'pos-top10' : 'pos-other';
+          return `<tr>
+            <td>${kw.keyword}</td>
+            <td><span class="pos-badge ${posClass}">#${kw.position}</span></td>
+            <td>${formatNumber(kw.volume)}/mês</td>
+          </tr>`;
+        }).join('');
+      }
+
+      showView('view-results');
+    }
+
+    const routingMessages = {
+      online_course: {
+        title: 'Vamos ajudar a sua clínica a crescer!',
+        message: 'Preparámos os recursos certos para a fase em que a sua clínica se encontra. Vamos entrar em contacto em breve com acesso ao nosso programa de crescimento.',
+        cta: 'Ver Programa Online →',
+        href: 'https://wonder-ads.com'
+      },
+      seo_service: {
+        title: 'A sua clínica tem grande potencial!',
+        message: 'Com a estratégia SEO certa, clínicas como a sua triplicaram o número de pacientes em 6 meses. A nossa equipa vai entrar em contacto para apresentar um plano personalizado.',
+        cta: 'Agendar Chamada →',
+        href: 'https://wonder-ads.com'
+      },
+      full_audit: {
+        title: 'Reservámos uma Auditoria Gratuita para si!',
+        message: 'A sua clínica está no perfil ideal para uma parceria WonderAds. A nossa equipa vai analisar o seu caso em detalhe e apresentar um plano de crescimento — sem custos.',
+        cta: 'Confirmar a Minha Auditoria →',
+        href: 'https://wonder-ads.com'
+      },
+      unknown: {
+        title: 'Obrigado pelo seu interesse!',
+        message: 'A nossa equipa vai entrar em contacto em breve.',
+        cta: 'Visitar WonderAds →',
+        href: 'https://wonder-ads.com'
+      }
+    };
+
+    function submitLead() {
+      const name = document.getElementById('lead-name').value.trim();
+      const clinic = document.getElementById('lead-clinic').value.trim();
+      const email = document.getElementById('lead-email').value.trim();
+      const phone = document.getElementById('lead-phone').value.trim();
+      const faturacao = document.getElementById('lead-faturacao').value;
+      const errorEl = document.getElementById('form-error');
+      errorEl.textContent = '';
+
+      if (!name || !email || !phone || !faturacao) {
+        errorEl.textContent = 'Por favor preencha todos os campos incluindo a faturação anual.';
+        return;
+      }
+
+      const btn = document.querySelector('.btn-cta');
+      btn.disabled = true;
+      btn.textContent = 'A enviar...';
+
+      fetch('/submit-lead', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name, clinic, email, phone, faturacao,
+          domain: analysisResult?.domain || '',
+          score: analysisResult?.score || 0
+        })
+      })
+      .then(r => r.json())
+      .then(data => {
+        const product = data.routing?.product || 'unknown';
+        const msg = routingMessages[product] || routingMessages.unknown;
+        document.getElementById('ty-title').textContent = msg.title;
+        document.getElementById('ty-message').textContent = msg.message;
+        const ctaEl = document.getElementById('ty-cta');
+        ctaEl.textContent = msg.cta;
+        ctaEl.href = msg.href;
+        showView('view-thankyou');
+      })
+      .catch(() => {
+        errorEl.textContent = 'Erro ao enviar. Tente novamente.';
+        btn.disabled = false;
+        btn.textContent = 'Quero o Meu Relatório Completo →';
+      });
+    }
+
+    // Allow Enter key on URL input
+    document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('url-input').addEventListener('keydown', e => {
+        if (e.key === 'Enter') startAnalysis();
+      });
+    });
+  </script>
+</body>
+</html>

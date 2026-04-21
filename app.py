@@ -272,7 +272,7 @@ def submit_lead():
             </table>
         '''
         msg.attach(MIMEText(html_body, 'html'))
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as server:
             server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
             server.sendmail(GMAIL_USER, ['alex@wonder-ads.com', 'germano@wonder-ads.com'], msg.as_string())
     except Exception as e:

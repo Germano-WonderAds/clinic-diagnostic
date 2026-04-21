@@ -281,6 +281,22 @@ def submit_lead():
     return jsonify({'success': True, 'routing': routing})
 
 
+@app.route('/test-email')
+def test_email():
+    try:
+        msg = MIMEMultipart('alternative')
+        msg['Subject'] = 'WonderAds — Teste de Email'
+        msg['From'] = GMAIL_USER
+        msg['To'] = GMAIL_USER
+        msg.attach(MIMEText('<p>Email de teste OK.</p>', 'html'))
+        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as server:
+            server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
+            server.sendmail(GMAIL_USER, [GMAIL_USER], msg.as_string())
+        return jsonify({'ok': True, 'from': GMAIL_USER})
+    except Exception as e:
+        return jsonify({'ok': False, 'error': str(e), 'gmail_user_set': bool(GMAIL_USER), 'password_set': bool(GMAIL_APP_PASSWORD)})
+
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(debug=False, host='0.0.0.0', port=port)

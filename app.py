@@ -2,9 +2,6 @@ from flask import Flask, request, jsonify, render_template
 from flask_cors import CORS
 import requests
 import os
-import smtplib
-from email.mime.multipart import MIMEMultipart
-from email.mime.text import MIMEText
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -15,8 +12,8 @@ CORS(app)
 SEMRUSH_API_KEY = os.environ.get('SEMRUSH_API_KEY', '')
 DATAFORSEO_API_KEY = os.environ.get('DATAFORSEO_API_KEY', '')
 OPENPAGERANK_API_KEY = os.environ.get('OPENPAGERANK_API_KEY', '')
-GMAIL_USER = os.environ.get('GMAIL_USER', '')
-GMAIL_APP_PASSWORD = os.environ.get('GMAIL_APP_PASSWORD', '')
+GHL_API_KEY = os.environ.get('GHL_API_KEY', '')
+GHL_LOCATION_ID = 'qU6FA4QOG2HUgad7y9dr'
 
 DFS_HEADERS = {
     'Authorization': f'Basic {DATAFORSEO_API_KEY}',
@@ -254,47 +251,65 @@ def submit_lead():
     print(f"================\n")
 
     try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = f'Novo Lead — {clinic} ({routing["label"]})'
-        msg['From'] = GMAIL_USER
-        msg['To'] = 'alex@wonder-ads.com, germano@wonder-ads.com'
-        html_body = f'''
-            <h2>Novo lead do Diagnóstico Digital</h2>
-            <table style="border-collapse:collapse;width:100%">
-                <tr><td style="padding:8px;color:#666">Nome</td><td style="padding:8px"><strong>{name}</strong></td></tr>
-                <tr><td style="padding:8px;color:#666">Clínica</td><td style="padding:8px"><strong>{clinic}</strong></td></tr>
-                <tr><td style="padding:8px;color:#666">Email</td><td style="padding:8px"><a href="mailto:{email}">{email}</a></td></tr>
-                <tr><td style="padding:8px;color:#666">Telemóvel</td><td style="padding:8px">{phone}</td></tr>
-                <tr><td style="padding:8px;color:#666">Faturação</td><td style="padding:8px">{faturacao}</td></tr>
-                <tr><td style="padding:8px;color:#666">Website</td><td style="padding:8px">{domain}</td></tr>
-                <tr><td style="padding:8px;color:#666">Score SEO</td><td style="padding:8px"><strong>{score}/100</strong></td></tr>
-                <tr style="background:#f9f9f9"><td style="padding:8px;color:#666">Rota</td><td style="padding:8px"><strong style="color:#7c3aed">{routing["label"]}</strong> — {routing["description"]}</td></tr>
-            </table>
-        '''
-        msg.attach(MIMEText(html_body, 'html'))
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as server:
-            server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-            server.sendmail(GMAIL_USER, ['alex@wonder-ads.com', 'germano@wonder-ads.com'], msg.as_string())
+        name_parts = name.strip().split(' ', 1)
+        first_name = name_parts[0]
+        last_name = name_parts[1] if len(name_parts) > 1 else ''
+        tags = ['seo-diagnostico', routing['product']]
+        payload = {
+            'locationId': GHL_LOCATION_ID,
+            'firstName': first_name,
+            'lastName': last_name,
+            'email': email,
+            'phone': phone,
+            'companyName': clinic,
+            'website': f'https://{domain}' if domain else '',
+            'tags': tags,
+            'source': 'SEO Diagnóstico',
+            'customFields': [
+                {'key': 'faturacao_anual', 'value': faturacao},
+                {'key': 'seo_score', 'value': str(score)},
+                {'key': 'rota', 'value': routing['label']}
+            ]
+        }
+        requests.post(
+            'https://services.leadconnectorhq.com/contacts/',
+            headers={
+                'Authorization': f'Bearer {GHL_API_KEY}',
+                'Content-Type': 'application/json',
+                'Version': '2021-07-28'
+            },
+            json=payload,
+            timeout=10
+        )
     except Exception as e:
-        print(f"Email send error: {e}")
+        print(f"GHL contact error: {e}")
 
     return jsonify({'success': True, 'routing': routing})
 
 
-@app.route('/test-email')
-def test_email():
+@app.route('/test-ghl')
+def test_ghl():
     try:
-        msg = MIMEMultipart('alternative')
-        msg['Subject'] = 'WonderAds — Teste de Email'
-        msg['From'] = GMAIL_USER
-        msg['To'] = GMAIL_USER
-        msg.attach(MIMEText('<p>Email de teste OK.</p>', 'html'))
-        with smtplib.SMTP_SSL('smtp.gmail.com', 465, timeout=10) as server:
-            server.login(GMAIL_USER, GMAIL_APP_PASSWORD)
-            server.sendmail(GMAIL_USER, [GMAIL_USER], msg.as_string())
-        return jsonify({'ok': True, 'from': GMAIL_USER})
+        r = requests.post(
+            'https://services.leadconnectorhq.com/contacts/',
+            headers={
+                'Authorization': f'Bearer {GHL_API_KEY}',
+                'Content-Type': 'application/json',
+                'Version': '2021-07-28'
+            },
+            json={
+                'locationId': GHL_LOCATION_ID,
+                'firstName': 'Teste',
+                'lastName': 'WonderAds',
+                'email': 'teste@wonder-ads.com',
+                'tags': ['seo-diagnostico', 'test'],
+                'source': 'SEO Diagnóstico'
+            },
+            timeout=10
+        )
+        return jsonify({'ok': r.status_code in [200, 201], 'status': r.status_code, 'response': r.json()})
     except Exception as e:
-        return jsonify({'ok': False, 'error': str(e), 'gmail_user_set': bool(GMAIL_USER), 'password_set': bool(GMAIL_APP_PASSWORD)})
+        return jsonify({'ok': False, 'error': str(e), 'ghl_key_set': bool(GHL_API_KEY)})
 
 
 if __name__ == '__main__':

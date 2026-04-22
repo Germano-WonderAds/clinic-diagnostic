@@ -287,7 +287,7 @@ def submit_lead():
 def ghl_fields():
     try:
         r = requests.get(
-            f'https://services.leadconnectorhq.com/contacts/custom-fields?locationId={GHL_LOCATION_ID}',
+            f'https://services.leadconnectorhq.com/locations/{GHL_LOCATION_ID}/customFields',
             headers={
                 'Authorization': f'Bearer {GHL_API_KEY}',
                 'Version': '2021-07-28'

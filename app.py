@@ -268,6 +268,8 @@ def submit_lead():
             'customFields': [
                 {'id': 'zgRurIwy2zMosTrxJNM7', 'value': f'https://{domain}' if domain else ''},
                 {'id': 'q6GlymuWUDM5ikWjgUzO', 'value': faturacao},
+                {'id': 'CJ0vxcf4tLOaBVCV8Gaj', 'value': str(score)},
+                {'id': '4PZSwmBfBW2xZ7zHO4vk', 'value': routing['label']},
             ]
         }
         requests.post(

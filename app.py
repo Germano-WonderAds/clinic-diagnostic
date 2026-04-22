@@ -283,6 +283,22 @@ def submit_lead():
     return jsonify({'success': True, 'routing': routing})
 
 
+@app.route('/ghl-fields')
+def ghl_fields():
+    try:
+        r = requests.get(
+            f'https://services.leadconnectorhq.com/contacts/custom-fields?locationId={GHL_LOCATION_ID}',
+            headers={
+                'Authorization': f'Bearer {GHL_API_KEY}',
+                'Version': '2021-07-28'
+            },
+            timeout=10
+        )
+        return jsonify(r.json())
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+
 @app.route('/test-ghl')
 def test_ghl():
     try:

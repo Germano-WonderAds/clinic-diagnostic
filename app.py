@@ -265,11 +265,7 @@ def submit_lead():
             'website': f'https://{domain}' if domain else '',
             'tags': tags,
             'source': 'SEO Diagnóstico',
-            'customFields': [
-                {'key': 'faturacao_anual', 'value': faturacao},
-                {'key': 'seo_score', 'value': str(score)},
-                {'key': 'rota', 'value': routing['label']}
-            ]
+            'description': f'Faturação anual: {faturacao} | SEO Score: {score}/100 | Rota: {routing["label"]}'
         }
         requests.post(
             'https://services.leadconnectorhq.com/contacts/',

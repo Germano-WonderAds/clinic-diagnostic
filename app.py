@@ -241,6 +241,13 @@ def submit_lead():
     score = data.get('score', '')
 
     routing = get_routing(faturacao)
+    faturacao_labels = {
+        '50000': 'Menos de 100K€/ano',
+        '125000': 'Entre 100K€ e 150K€/ano',
+        '225000': 'Entre 150K€ e 300K€/ano',
+        '400000': 'Mais de 300K€/ano'
+    }
+    faturacao_label = faturacao_labels.get(str(faturacao), faturacao)
 
     print(f"\n=== NEW LEAD ===")
     print(f"Name: {name} | Clinic: {clinic}")
@@ -267,7 +274,7 @@ def submit_lead():
             'source': 'SEO Diagnóstico',
             'customFields': [
                 {'id': 'zgRurIwy2zMosTrxJNM7', 'value': f'https://{domain}' if domain else ''},
-                {'id': 'q6GlymuWUDM5ikWjgUzO', 'value': faturacao},
+                {'id': 'q6GlymuWUDM5ikWjgUzO', 'value': faturacao_label},
                 {'id': 'CJ0vxcf4tLOaBVCV8Gaj', 'value': str(score)},
                 {'id': '4PZSwmBfBW2xZ7zHO4vk', 'value': routing['label']},
             ]
